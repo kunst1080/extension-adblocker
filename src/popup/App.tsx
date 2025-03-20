@@ -35,7 +35,7 @@ const App: React.FC = () => {
   return (
     <div className="container">
       <div className="header">
-        <img src="../assets/icon48.png" alt="AdBlocker Logo" className="logo" />
+        <img src="/icon48.svg" alt="AdBlocker Logo" className="logo" />
         <h1>AdBlocker Extension</h1>
       </div>
 

@@ -46,13 +46,9 @@ extension-adblocker/
 npm install
 ```
 
-### Development Build
+### Development
 
-```bash
-npm run dev
-```
-
-### Production Build
+#### Build the Extension
 
 ```bash
 npm run build
@@ -60,9 +56,41 @@ npm run build
 
 The built extension will be in the `dist` directory.
 
-### Loading the Extension in Chrome
+#### Run the Extension Locally
 
-1. Build the extension using one of the commands above
+To run the extension in Chrome:
+
+```bash
+npm run start
+```
+
+This will build the extension and launch Chrome with the extension installed.
+
+To run the extension in Firefox:
+
+```bash
+npm run start:firefox
+```
+
+#### Lint the Extension
+
+```bash
+npm run lint
+```
+
+#### Package the Extension for Distribution
+
+```bash
+npm run package
+```
+
+This will create a `.zip` file in the `web-ext-artifacts` directory that can be uploaded to the Chrome Web Store or Firefox Add-ons.
+
+### Manual Loading in Chrome
+
+If you prefer to load the extension manually:
+
+1. Build the extension using `npm run build`
 2. Open Chrome and navigate to `chrome://extensions`
 3. Enable "Developer mode" (toggle in the top-right corner)
 4. Click "Load unpacked" and select the `dist` directory

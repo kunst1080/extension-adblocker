@@ -5,8 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc ; vite build",
-    "preview": "vite preview"
+    "tsc": "tsc",
+    "vite:build": "vite build",
+    "build": "run-s tsc vite:build",
+    "preview": "vite preview",
+    "start": "run-s build start:chrome",
+    "start:chrome": "web-ext run --source-dir=dist --target=chromium",
+    "start:firefox": "web-ext run --source-dir=dist",
+    "lint": "web-ext lint --source-dir=dist",
+    "package": "run-s build package:ext",
+    "package:ext": "web-ext build --source-dir=dist --overwrite-dest"
   },
   "keywords": [
     "chrome-extension",
@@ -18,9 +26,11 @@
   "devDependencies": {
     "@types/chrome": "^0.0.260",
     "@types/node": "^20.11.0",
+    "npm-run-all": "^4.1.5",
     "typescript": "^5.3.3",
     "vite": "^5.0.10",
-    "vite-plugin-web-extension": "^4.0.0"
+    "vite-plugin-web-extension": "^4.0.0",
+    "web-ext": "^8.5.0"
   },
   "dependencies": {
     "@types/react": "^19.0.12",

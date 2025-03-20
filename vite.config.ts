@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+  publicDir: 'src/assets',
   plugins: [
     webExtension({
       manifest: () => ({
@@ -17,9 +18,9 @@ export default defineConfig({
         action: {
           default_popup: 'src/popup/index.html',
           default_icon: {
-            '16': 'src/assets/icon16.png',
-            '48': 'src/assets/icon48.png',
-            '128': 'src/assets/icon128.png'
+            '16': 'icon16.svg',
+            '48': 'icon48.svg',
+            '128': 'icon128.svg'
           }
         },
         background: {
@@ -33,9 +34,9 @@ export default defineConfig({
           }
         ],
         icons: {
-          '16': 'src/assets/icon16.png',
-          '48': 'src/assets/icon48.png',
-          '128': 'src/assets/icon128.png'
+          '16': 'icon16.svg',
+          '48': 'icon48.svg',
+          '128': 'icon128.svg'
         }
       })
     })
