@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import "./App.css";
 
 const App: React.FC = () => {
   const [enabled, setEnabled] = useState(true);
   const [stats, setStats] = useState({
     todayCount: 0,
     totalCount: 0,
-    pagesCount: 0
+    pagesCount: 0,
   });
 
   useEffect(() => {
     // Load initial state from storage
-    chrome.storage.local.get(['enabled', 'stats'], (result) => {
+    chrome.storage.local.get(["enabled", "stats"], (result) => {
       if (result.enabled !== undefined) {
         setEnabled(result.enabled);
       }
@@ -29,7 +29,10 @@ const App: React.FC = () => {
     chrome.storage.local.set({ enabled: newEnabled });
 
     // Send message to background script
-    chrome.runtime.sendMessage({ action: 'toggleAdBlocking', enabled: newEnabled });
+    chrome.runtime.sendMessage({
+      action: "toggleAdBlocking",
+      enabled: newEnabled,
+    });
   };
 
   return (
@@ -38,19 +41,13 @@ const App: React.FC = () => {
         <img src="/icon48.svg" alt="AdBlocker Logo" className="logo" />
         <h1>AdBlocker Extension</h1>
       </div>
-
       <div className="toggle-container">
         <span>Ad Blocking</span>
         <label className="toggle">
-          <input
-            type="checkbox"
-            checked={enabled}
-            onChange={handleToggle}
-          />
+          <input type="checkbox" checked={enabled} onChange={handleToggle} />
           <span className="slider"></span>
         </label>
       </div>
-
       <div className="stats">
         <div className="stat-item">
           <span>Ads Blocked Today:</span>
@@ -65,7 +62,6 @@ const App: React.FC = () => {
           <span>{stats.pagesCount}</span>
         </div>
       </div>
-
       <div className="footer">
         <p>AdBlocker Extension v1.0.0</p>
       </div>

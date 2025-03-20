@@ -1,49 +1,43 @@
-import { defineConfig } from 'vite';
-import webExtension from 'vite-plugin-web-extension';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { defineConfig, Plugin } from "vite";
+import path from "path";
+import fs from "fs";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// Custom plugin to copy manifest.json to dist
+const copyManifestPlugin = (): Plugin => {
+  return {
+    name: "copy-manifest",
+    writeBundle() {
+      const manifestContent = fs.readFileSync("manifest.json", "utf-8");
+      fs.writeFileSync(
+        path.resolve(__dirname, "dist/manifest.json"),
+        manifestContent
+      );
+      console.log("Manifest copied to dist/manifest.json");
+    },
+  };
+};
 
 export default defineConfig({
-  publicDir: 'src/assets',
-  plugins: [
-    webExtension({
-      manifest: () => ({
-        manifest_version: 3,
-        name: 'AdBlocker Extension',
-        version: '1.0.0',
-        description: 'A Chrome extension to block ads',
-        permissions: ['webRequest', 'webRequestBlocking', '<all_urls>', 'storage'],
-        action: {
-          default_popup: 'src/popup/index.html',
-          default_icon: {
-            '16': 'icon16.svg',
-            '48': 'icon48.svg',
-            '128': 'icon128.svg'
-          }
-        },
-        background: {
-          service_worker: 'src/background/index.ts',
-          type: 'module'
-        },
-        content_scripts: [
-          {
-            matches: ['<all_urls>'],
-            js: ['src/content/index.ts']
-          }
-        ],
-        icons: {
-          '16': 'icon16.svg',
-          '48': 'icon48.svg',
-          '128': 'icon128.svg'
-        }
-      })
-    })
-  ],
+  publicDir: "src/assets",
+  plugins: [copyManifestPlugin()],
+  build: {
+    outDir: "dist",
+    rollupOptions: {
+      input: {
+        popup: path.resolve(__dirname, "src/popup/index.html"),
+        background: path.resolve(__dirname, "src/background/index.ts"),
+        content: path.resolve(__dirname, "src/content/index.ts"),
+      },
+      output: {
+        entryFileNames: "[name]/index.js",
+        chunkFileNames: "[name]/[name].[hash].js",
+        assetFileNames: "[name]/[name].[ext]",
+      },
+    },
+  },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src')
-    }
-  }
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
 });

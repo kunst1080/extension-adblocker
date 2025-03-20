@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "AdBlocker Extension",
+  "version": "1.0.0",
+  "description": "A Chrome extension to block ads",
+  "permissions": ["webRequest", "webRequestBlocking", "<all_urls>", "storage"],
+  "action": {
+    "default_popup": "src/popup/index.html",
+    "default_icon": {
+      "16": "icon16.svg",
+      "48": "icon48.svg",
+      "128": "icon128.svg"
+    }
+  },
+  "background": {
+    "service_worker": "background/index.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/index.js"]
+    }
+  ],
+  "icons": {
+    "16": "icon16.svg",
+    "48": "icon48.svg",
+    "128": "icon128.svg"
+  }
+}
