@@ -4,17 +4,21 @@
   "description": "A Chrome extension to block ads",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "clean": "rimraf dist",
+    "dev": "run-s watch chrome:dev",
     "tsc": "tsc",
     "vite:build": "vite build",
     "build": "run-s tsc vite:build",
-    "preview": "vite preview",
-    "start": "run-s build start:chrome",
-    "start:chrome": "web-ext run --source-dir=dist --target=chromium",
-    "start:firefox": "web-ext run --source-dir=dist",
+    "watch": "tsc ; vite build --watch",
+    "start": "run-s build chrome:start",
+    "chrome:start": "web-ext run --target=chromium --keep-profile-changes --chromium-profile=$PWD/.profile",
+    "chrome:dev": "web-ext run --target=chromium --keep-profile-changes --chromium-profile=$PWD/.profile --verbose --args='--auto-open-devtools-for-tabs'",
     "lint": "web-ext lint --source-dir=dist",
     "package": "run-s build package:ext",
     "package:ext": "web-ext build --source-dir=dist --overwrite-dest"
+  },
+  "webExt": {
+    "sourceDir": "dist"
   },
   "keywords": [
     "chrome-extension",

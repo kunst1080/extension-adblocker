@@ -4,17 +4,17 @@ A Chrome extension to block ads, built with TypeScript and Vite.
 
 ## Features
 
-- Blocks common ad network requests
-- Hides ad elements on web pages
-- Toggle ad blocking on/off
-- Tracks statistics (ads blocked today, total ads blocked, pages protected)
+-   Blocks common ad network requests
+-   Hides ad elements on web pages
+-   Toggle ad blocking on/off
+-   Tracks statistics (ads blocked today, total ads blocked, pages protected)
 
 ## Tech Stack
 
-- TypeScript
-- React
-- Vite
-- Chrome Extension API
+-   TypeScript
+-   React
+-   Vite
+-   Chrome Extension API
 
 ## Project Structure
 
@@ -34,8 +34,8 @@ extension-adblocker/
 
 ### Prerequisites
 
-- Node.js (v14 or later)
-- npm (v6 or later)
+-   Node.js (v14 or later)
+-   npm (v6 or later)
 
 ### Setup
 
@@ -58,19 +58,15 @@ The built extension will be in the `dist` directory.
 
 #### Run the Extension Locally
 
-To run the extension in Chrome:
+##### Basic Run
+
+To build and run the extension in Chrome:
 
 ```bash
 npm run start
 ```
 
 This will build the extension and launch Chrome with the extension installed.
-
-To run the extension in Firefox:
-
-```bash
-npm run start:firefox
-```
 
 #### Lint the Extension
 
@@ -100,9 +96,9 @@ If you prefer to load the extension manually:
 
 Before building for production, add your icon files to the `src/assets` directory:
 
-- `icon16.png` (16x16 pixels)
-- `icon48.png` (48x48 pixels)
-- `icon128.png` (128x128 pixels)
+-   `icon16.png` (16x16 pixels)
+-   `icon48.png` (48x48 pixels)
+-   `icon128.png` (128x128 pixels)
 
 ## License
 
