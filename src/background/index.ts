@@ -42,13 +42,22 @@ function checkAndResetDailyStats() {
   if (stats.lastResetDate !== today) {
     stats.todayCount = 0;
     stats.lastResetDate = today;
+
+    // We don't reset uniqueDomains here because pagesCount is a cumulative stat
+    // If we wanted to track daily unique domains, we would need a separate counter
+
     saveStats();
   }
 }
 
-// Function to save stats to storage
+// Function to save stats and domains to storage
 function saveStats() {
-  chrome.storage.local.set({ stats });
+  // Convert Set to Array for storage
+  const domainsArray = Array.from(uniqueDomains);
+  chrome.storage.local.set({
+    stats,
+    uniqueDomains: domainsArray,
+  });
 }
 
 // Define a type for navigation details
@@ -186,20 +195,25 @@ function init() {
   console.log("AdBlocker Extension initialized");
 
   // Load settings from storage
-  chrome.storage.local.get(["enabled", "stats"], (result) => {
+  chrome.storage.local.get(["enabled", "stats", "uniqueDomains"], (result) => {
     if (result.enabled !== undefined) {
       enabled = result.enabled;
     }
 
     if (result.stats) {
       stats = result.stats;
-
-      // Initialize the uniqueDomains set with placeholder entries
-      // to match the pagesCount (we don't know the actual domains)
-      for (let i = 0; i < stats.pagesCount; i++) {
-        uniqueDomains.add(`placeholder-domain-${i}`);
-      }
     }
+
+    // Load unique domains from storage if available
+    uniqueDomains.clear(); // Always start with a clean set
+    if (result.uniqueDomains && Array.isArray(result.uniqueDomains)) {
+      result.uniqueDomains.forEach((domain: string) => {
+        uniqueDomains.add(domain);
+      });
+    }
+
+    // Always set pagesCount to match uniqueDomains.size
+    stats.pagesCount = uniqueDomains.size;
 
     checkAndResetDailyStats();
     setupAdBlocking();
