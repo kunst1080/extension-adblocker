@@ -16,6 +16,10 @@ A Chrome extension to block ads, built with TypeScript and Vite.
 -   Vite
 -   Chrome Extension API
 
+## Documentation
+
+-   **SPEC.md**: Detailed technical specification document that explains the extension's architecture, ad blocking methods, state management, and other implementation details.
+
 ## Project Structure
 
 ```
@@ -27,7 +31,8 @@ extension-adblocker/
 │   └── popup/          # Extension popup UI (React)
 ├── package.json        # Project dependencies
 ├── tsconfig.json       # TypeScript configuration
-└── vite.config.ts      # Vite configuration
+├── vite.config.ts      # Vite configuration
+└── SPEC.md             # Technical specification document
 ```
 
 ## Development
