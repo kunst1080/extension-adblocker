@@ -28,15 +28,31 @@ The extension employs two complementary methods to block advertisements:
 
 #### 1. Network Request Blocking (Background Script)
 
-The background script intercepts outgoing network requests and blocks those matching known ad domain patterns. This prevents ad content from being downloaded in the first place, saving bandwidth and improving page load times.
+The background script uses the declarativeNetRequest API to block outgoing network requests that match known ad domain patterns. This prevents ad content from being downloaded in the first place, saving bandwidth and improving page load times.
 
 ```typescript
-// Example of network request blocking
-chrome.webRequest.onBeforeRequest.addListener(
-    listener,
-    { urls: adBlockRules },
-    ["blocking"]
-);
+// Example of declarativeNetRequest rule creation
+const rules = adDomainPatterns.map((pattern, index) => {
+    return {
+        id: index + 1,
+        priority: 1,
+        action: { type: chrome.declarativeNetRequest.RuleActionType.BLOCK },
+        condition: {
+            urlFilter: pattern,
+            resourceTypes: [
+                chrome.declarativeNetRequest.ResourceType.SCRIPT,
+                chrome.declarativeNetRequest.ResourceType.IMAGE,
+                // Other resource types...
+            ],
+        },
+    };
+});
+
+// Apply the rules
+chrome.declarativeNetRequest.updateDynamicRules({
+    removeRuleIds: existingRuleIds,
+    addRules: rules,
+});
 ```
 
 #### 2. DOM Element Removal (Content Script)

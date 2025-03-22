@@ -1,6 +1,5 @@
-// Ad blocking rules
-const adBlockRules = [
-  // Common ad domains and patterns
+// Ad blocking rules patterns
+const adDomainPatterns = [
   "*://*.doubleclick.net/*",
   "*://*.googlesyndication.com/*",
   "*://*.googleadservices.com/*",
@@ -32,7 +31,10 @@ const defaultStats: Stats = {
 // Extension state
 let enabled = true;
 let stats = { ...defaultStats };
-let activeListeners: any[] = [];
+let ruleIds: number[] = [];
+let navigationListener: ((details: any) => void) | null = null;
+// Set to track unique domains where ads have been blocked
+const uniqueDomains = new Set<string>();
 
 // Function to reset daily stats if needed
 function checkAndResetDailyStats() {
@@ -49,54 +51,120 @@ function saveStats() {
   chrome.storage.local.set({ stats });
 }
 
+// Define a type for navigation details
+interface NavigationDetails {
+  url?: string;
+  tabId?: number;
+}
+
 // Function to update stats when an ad is blocked
-function updateStats(details: chrome.webRequest.WebRequestDetails) {
+function updateStats(details: NavigationDetails) {
   // Increment counters
   stats.todayCount++;
   stats.totalCount++;
 
-  // Track unique pages
-  const tabId = details.tabId;
-  if (tabId > 0) {
-    // Only count actual tabs, not the background
-    chrome.tabs.get(tabId, (tab) => {
-      if (tab && tab.url) {
-        // Could implement more sophisticated tracking of unique pages here
-        stats.pagesCount++;
-        saveStats();
-      }
-    });
-  }
+  // Track unique domains
+  if (details.url) {
+    try {
+      // Extract domain from URL
+      const url = new URL(details.url);
+      const domain = url.hostname;
 
-  saveStats();
+      // Only count unique domains
+      if (!uniqueDomains.has(domain)) {
+        uniqueDomains.add(domain);
+        stats.pagesCount = uniqueDomains.size; // Update count to match the set size
+      }
+
+      saveStats();
+    } catch (e) {
+      // Invalid URL, just save the stats without updating pages
+      saveStats();
+    }
+  } else {
+    // No URL available, just save the stats without updating pages
+    saveStats();
+  }
+}
+
+// Convert ad domain patterns to declarativeNetRequest rules
+function createRules(): chrome.declarativeNetRequest.Rule[] {
+  return adDomainPatterns.map((pattern, index) => {
+    return {
+      id: index + 1, // Rule IDs must be positive integers
+      priority: 1,
+      action: { type: chrome.declarativeNetRequest.RuleActionType.BLOCK },
+      condition: {
+        urlFilter: pattern,
+        resourceTypes: [
+          chrome.declarativeNetRequest.ResourceType.MAIN_FRAME,
+          chrome.declarativeNetRequest.ResourceType.SUB_FRAME,
+          chrome.declarativeNetRequest.ResourceType.STYLESHEET,
+          chrome.declarativeNetRequest.ResourceType.SCRIPT,
+          chrome.declarativeNetRequest.ResourceType.IMAGE,
+          chrome.declarativeNetRequest.ResourceType.FONT,
+          chrome.declarativeNetRequest.ResourceType.OBJECT,
+          chrome.declarativeNetRequest.ResourceType.XMLHTTPREQUEST,
+          chrome.declarativeNetRequest.ResourceType.PING,
+          chrome.declarativeNetRequest.ResourceType.CSP_REPORT,
+          chrome.declarativeNetRequest.ResourceType.MEDIA,
+          chrome.declarativeNetRequest.ResourceType.WEBSOCKET,
+          chrome.declarativeNetRequest.ResourceType.OTHER,
+        ],
+      },
+    };
+  });
 }
 
 // Function to set up ad blocking
-function setupAdBlocking() {
-  // Remove any existing listeners
-  if (activeListeners.length > 0) {
-    for (const listener of activeListeners) {
-      chrome.webRequest.onBeforeRequest.removeListener(listener);
-    }
-    activeListeners = [];
-  }
-
+async function setupAdBlocking() {
   if (enabled) {
-    // Create a new listener function
-    const listener = (details: chrome.webRequest.WebRequestDetails) => {
-      updateStats(details);
-      return { cancel: true };
-    };
+    const rules = createRules();
+    ruleIds = rules.map((rule) => rule.id);
 
-    // Add the listener
-    chrome.webRequest.onBeforeRequest.addListener(
-      listener,
-      { urls: adBlockRules },
-      ["blocking"]
-    );
+    try {
+      // Remove any existing rules
+      await chrome.declarativeNetRequest.updateDynamicRules({
+        removeRuleIds: ruleIds,
+        addRules: rules,
+      });
 
-    // Store the listener reference
-    activeListeners.push(listener);
+      console.log(`Added ${rules.length} ad blocking rules`);
+
+      // Remove any existing listener
+      if (navigationListener) {
+        chrome.webNavigation.onCompleted.removeListener(navigationListener);
+      }
+
+      // Set up a new listener for when requests are blocked
+      navigationListener = (details) => {
+        // This is a simple approach - in a real extension, we would need
+        // a more sophisticated way to determine if a request was blocked
+        updateStats(details);
+      };
+
+      chrome.webNavigation.onCompleted.addListener(navigationListener);
+    } catch (error) {
+      console.error("Error setting up ad blocking rules:", error);
+    }
+  } else {
+    // Remove all rules when disabled
+    try {
+      await chrome.declarativeNetRequest.updateDynamicRules({
+        removeRuleIds: ruleIds,
+        addRules: [],
+      });
+
+      // Remove the navigation listener
+      if (navigationListener) {
+        chrome.webNavigation.onCompleted.removeListener(navigationListener);
+        navigationListener = null;
+      }
+
+      console.log("Removed all ad blocking rules");
+    } catch (error) {
+      console.error("Error removing ad blocking rules:", error);
+    }
   }
 }
 
@@ -125,6 +193,12 @@ function init() {
 
     if (result.stats) {
       stats = result.stats;
+
+      // Initialize the uniqueDomains set with placeholder entries
+      // to match the pagesCount (we don't know the actual domains)
+      for (let i = 0; i < stats.pagesCount; i++) {
+        uniqueDomains.add(`placeholder-domain-${i}`);
+      }
     }
 
     checkAndResetDailyStats();

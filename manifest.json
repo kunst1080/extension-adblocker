@@ -3,7 +3,8 @@
   "name": "AdBlocker Extension",
   "version": "1.0.0",
   "description": "A Chrome extension to block ads",
-  "permissions": ["webRequest", "webRequestBlocking", "<all_urls>", "storage"],
+  "permissions": ["declarativeNetRequest", "webNavigation", "storage"],
+  "host_permissions": ["<all_urls>"],
   "action": {
     "default_popup": "src/popup/index.html",
     "default_icon": {
