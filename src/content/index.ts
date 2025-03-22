@@ -9,8 +9,10 @@ const adSelectors = [
   "#ad",
   "#ads",
   "#adunit",
-  '[class*="ad-"]:not([class*="header"]):not([class*="navigation"])',
-  '[id*="ad-"]:not([id*="header"]):not([id*="navigation"])',
+  '[class*="-ad-"]',
+  '[class*="-ads-"]',
+  '[class^="ad-"]',
+  '[class^="ads-"]',
   'iframe[src*="ad"]',
   'iframe[src*="doubleclick"]',
   'iframe[src*="googleadservices"]',
@@ -35,6 +37,7 @@ function hideAds() {
     for (const selector of adSelectors) {
       const elements = document.querySelectorAll(selector);
       elements.forEach((element) => {
+        console.debug("Removing ad element", element);
         (element as HTMLElement).style.display = "none";
       });
     }
