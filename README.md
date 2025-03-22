@@ -97,14 +97,6 @@ If you prefer to load the extension manually:
 4. Click "Load unpacked" and select the `dist` directory
 5. The extension should now be installed and visible in your browser
 
-## Adding Icons
-
-Before building for production, add your icon files to the `src/assets` directory:
-
--   `icon16.png` (16x16 pixels)
--   `icon48.png` (48x48 pixels)
--   `icon128.png` (128x128 pixels)
-
 ## License
 
 MIT
