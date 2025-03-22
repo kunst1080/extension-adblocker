@@ -8,17 +8,49 @@ const App: React.FC = () => {
     totalCount: 0,
     pagesCount: 0,
   });
+  const [blockedDomains, setBlockedDomains] = useState<string[]>([]);
+  const [showDomains, setShowDomains] = useState(false);
 
   useEffect(() => {
-    // Load initial state from storage
-    chrome.storage.local.get(["enabled", "stats"], (result) => {
+    // Load initial state from storage and get stats from background
+    chrome.storage.local.get(["enabled"], (result) => {
       if (result.enabled !== undefined) {
         setEnabled(result.enabled);
       }
-      if (result.stats) {
-        setStats(result.stats);
+    });
+
+    // Get stats and domains from background script
+    chrome.runtime.sendMessage({ action: "getStats" }, (response) => {
+      if (response && response.stats) {
+        setStats(response.stats);
+      }
+      if (response && response.uniqueDomains) {
+        setBlockedDomains(response.uniqueDomains);
       }
     });
+
+    // Listen for changes to storage
+    const storageListener = (changes: {
+      [key: string]: chrome.storage.StorageChange;
+    }) => {
+      if (changes.enabled) {
+        setEnabled(changes.enabled.newValue);
+      }
+      if (changes.stats) {
+        setStats(changes.stats.newValue);
+      }
+      if (changes.uniqueDomains) {
+        setBlockedDomains(changes.uniqueDomains.newValue);
+      }
+    };
+
+    // Add the listener
+    chrome.storage.onChanged.addListener(storageListener);
+
+    // Clean up the listener when the component unmounts
+    return () => {
+      chrome.storage.onChanged.removeListener(storageListener);
+    };
   }, []);
 
   const handleToggle = () => {
@@ -62,6 +94,26 @@ const App: React.FC = () => {
           <span>{stats.pagesCount}</span>
         </div>
       </div>
+      {blockedDomains.length > 0 && (
+        <div className="domains-section">
+          <div
+            className="domains-header"
+            onClick={() => setShowDomains(!showDomains)}
+          >
+            <span>Blocked Domains ({blockedDomains.length})</span>
+            <span>{showDomains ? "▲" : "▼"}</span>
+          </div>
+          {showDomains && (
+            <div className="domains-list">
+              {blockedDomains.map((domain, index) => (
+                <div key={index} className="domain-item">
+                  {domain}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       <div className="footer">
         <p>AdBlocker Extension v1.0.0</p>
       </div>

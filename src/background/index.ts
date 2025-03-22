@@ -185,7 +185,12 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     setupAdBlocking();
     sendResponse({ success: true });
   } else if (message.action === "getStats") {
-    sendResponse({ stats });
+    // Include the uniqueDomains in the response
+    const domainsArray = Array.from(uniqueDomains);
+    sendResponse({
+      stats,
+      uniqueDomains: domainsArray,
+    });
   }
   return true; // Keep the message channel open for async responses
 });
