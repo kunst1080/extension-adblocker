@@ -16,7 +16,6 @@ const adDomainPatterns = [
 interface Stats {
   todayCount: number;
   totalCount: number;
-  pagesCount: number;
   lastResetDate: string;
 }
 
@@ -24,7 +23,6 @@ interface Stats {
 const defaultStats: Stats = {
   todayCount: 0,
   totalCount: 0,
-  pagesCount: 0,
   lastResetDate: new Date().toDateString(),
 };
 
@@ -33,8 +31,6 @@ let enabled = true;
 let stats = { ...defaultStats };
 let ruleIds: number[] = [];
 let navigationListener: ((details: any) => void) | null = null;
-// Set to track unique domains where ads have been blocked
-const uniqueDomains = new Set<string>();
 
 // Function to reset daily stats if needed
 function checkAndResetDailyStats() {
@@ -50,50 +46,17 @@ function checkAndResetDailyStats() {
   }
 }
 
-// Function to save stats and domains to storage
+// Function to save stats to storage
 function saveStats() {
-  // Convert Set to Array for storage
-  const domainsArray = Array.from(uniqueDomains);
-  chrome.storage.local.set({
-    stats,
-    uniqueDomains: domainsArray,
-  });
-}
-
-// Define a type for navigation details
-interface NavigationDetails {
-  url?: string;
-  tabId?: number;
+  chrome.storage.local.set({ stats });
 }
 
 // Function to update stats when an ad is blocked
-function updateStats(details: NavigationDetails) {
+function updateStats() {
   // Increment counters
   stats.todayCount++;
   stats.totalCount++;
-
-  // Track unique domains
-  if (details.url) {
-    try {
-      // Extract domain from URL
-      const url = new URL(details.url);
-      const domain = url.hostname;
-
-      // Only count unique domains
-      if (!uniqueDomains.has(domain)) {
-        uniqueDomains.add(domain);
-        stats.pagesCount = uniqueDomains.size; // Update count to match the set size
-      }
-
-      saveStats();
-    } catch (e) {
-      // Invalid URL, just save the stats without updating pages
-      saveStats();
-    }
-  } else {
-    // No URL available, just save the stats without updating pages
-    saveStats();
-  }
+  saveStats();
 }
 
 // Convert ad domain patterns to declarativeNetRequest rules
@@ -146,10 +109,10 @@ async function setupAdBlocking() {
       }
 
       // Set up a new listener for when requests are blocked
-      navigationListener = (details) => {
+      navigationListener = () => {
         // This is a simple approach - in a real extension, we would need
         // a more sophisticated way to determine if a request was blocked
-        updateStats(details);
+        updateStats();
       };
 
       chrome.webNavigation.onCompleted.addListener(navigationListener);
@@ -185,12 +148,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     setupAdBlocking();
     sendResponse({ success: true });
   } else if (message.action === "getStats") {
-    // Include the uniqueDomains in the response
-    const domainsArray = Array.from(uniqueDomains);
-    sendResponse({
-      stats,
-      uniqueDomains: domainsArray,
-    });
+    sendResponse({ stats });
   }
   return true; // Keep the message channel open for async responses
 });
@@ -200,7 +158,7 @@ function init() {
   console.log("AdBlocker Extension initialized");
 
   // Load settings from storage
-  chrome.storage.local.get(["enabled", "stats", "uniqueDomains"], (result) => {
+  chrome.storage.local.get(["enabled", "stats"], (result) => {
     if (result.enabled !== undefined) {
       enabled = result.enabled;
     }
@@ -208,17 +166,6 @@ function init() {
     if (result.stats) {
       stats = result.stats;
     }
-
-    // Load unique domains from storage if available
-    uniqueDomains.clear(); // Always start with a clean set
-    if (result.uniqueDomains && Array.isArray(result.uniqueDomains)) {
-      result.uniqueDomains.forEach((domain: string) => {
-        uniqueDomains.add(domain);
-      });
-    }
-
-    // Always set pagesCount to match uniqueDomains.size
-    stats.pagesCount = uniqueDomains.size;
 
     checkAndResetDailyStats();
     setupAdBlocking();

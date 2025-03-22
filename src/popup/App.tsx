@@ -6,10 +6,7 @@ const App: React.FC = () => {
   const [stats, setStats] = useState({
     todayCount: 0,
     totalCount: 0,
-    pagesCount: 0,
   });
-  const [blockedDomains, setBlockedDomains] = useState<string[]>([]);
-  const [showDomains, setShowDomains] = useState(false);
 
   useEffect(() => {
     // Load initial state from storage and get stats from background
@@ -19,13 +16,10 @@ const App: React.FC = () => {
       }
     });
 
-    // Get stats and domains from background script
+    // Get stats from background script
     chrome.runtime.sendMessage({ action: "getStats" }, (response) => {
       if (response && response.stats) {
         setStats(response.stats);
-      }
-      if (response && response.uniqueDomains) {
-        setBlockedDomains(response.uniqueDomains);
       }
     });
 
@@ -38,9 +32,6 @@ const App: React.FC = () => {
       }
       if (changes.stats) {
         setStats(changes.stats.newValue);
-      }
-      if (changes.uniqueDomains) {
-        setBlockedDomains(changes.uniqueDomains.newValue);
       }
     };
 
@@ -89,31 +80,7 @@ const App: React.FC = () => {
           <span>Total Ads Blocked:</span>
           <span>{stats.totalCount}</span>
         </div>
-        <div className="stat-item">
-          <span>Pages Protected:</span>
-          <span>{stats.pagesCount}</span>
-        </div>
       </div>
-      {blockedDomains.length > 0 && (
-        <div className="domains-section">
-          <div
-            className="domains-header"
-            onClick={() => setShowDomains(!showDomains)}
-          >
-            <span>Blocked Domains ({blockedDomains.length})</span>
-            <span>{showDomains ? "▲" : "▼"}</span>
-          </div>
-          {showDomains && (
-            <div className="domains-list">
-              {blockedDomains.map((domain, index) => (
-                <div key={index} className="domain-item">
-                  {domain}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
       <div className="footer">
         <p>AdBlocker Extension v1.0.0</p>
       </div>

@@ -83,7 +83,6 @@ The popup interface provides:
 -   Statistics display showing:
     -   Ads blocked today
     -   Total ads blocked
-    -   Number of pages protected
 
 ## Statistics Tracking
 
@@ -91,7 +90,6 @@ The extension tracks the following statistics:
 
 -   **Today Count**: Number of ads blocked since midnight
 -   **Total Count**: Cumulative number of ads blocked since installation
--   **Pages Count**: Number of unique domains where ads have been blocked
 
 Statistics are updated in real-time and persisted in Chrome storage.
 
