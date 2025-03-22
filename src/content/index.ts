@@ -47,16 +47,30 @@ function hideAds() {
   });
 }
 
-// Initialize when the DOM is fully loaded
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("AdBlocker content script running");
-  hideAds();
-});
+// Function to initialize ad blocking
+function initialize() {
+  // Initialize when the DOM is fully loaded
+  document.addEventListener("DOMContentLoaded", () => {
+    hideAds();
+  });
 
-// Run immediately in case the DOM is already loaded
-if (
-  document.readyState === "interactive" ||
-  document.readyState === "complete"
-) {
-  hideAds();
+  // Run immediately in case the DOM is already loaded
+  if (
+    document.readyState === "interactive" ||
+    document.readyState === "complete"
+  ) {
+    hideAds();
+  }
 }
+
+// Check if ad blocking is enabled
+chrome.storage.local.get(["enabled"], (result) => {
+  const isEnabled = result.enabled !== undefined ? result.enabled : true;
+
+  if (isEnabled) {
+    console.log("AdBlocker content script running");
+    initialize();
+  } else {
+    console.log("AdBlocker content script running, but disabled");
+  }
+});
