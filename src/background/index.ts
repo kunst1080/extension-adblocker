@@ -1,16 +1,16 @@
 // Ad blocking rules
 const adBlockRules = [
   // Common ad domains and patterns
-  '*://*.doubleclick.net/*',
-  '*://*.googlesyndication.com/*',
-  '*://*.googleadservices.com/*',
-  '*://*.google-analytics.com/*',
-  '*://*.adnxs.com/*',
-  '*://*.advertising.com/*',
-  '*://ads.*.com/*',
-  '*://ad.*.com/*',
-  '*://banner.*.com/*',
-  '*://banners.*.com/*',
+  "*://*.doubleclick.net/*",
+  "*://*.googlesyndication.com/*",
+  "*://*.googleadservices.com/*",
+  "*://*.google-analytics.com/*",
+  "*://*.adnxs.com/*",
+  "*://*.advertising.com/*",
+  "*://ads.*.com/*",
+  "*://ad.*.com/*",
+  "*://banner.*.com/*",
+  "*://banners.*.com/*",
 ];
 
 // Statistics
@@ -26,7 +26,7 @@ const defaultStats: Stats = {
   todayCount: 0,
   totalCount: 0,
   pagesCount: 0,
-  lastResetDate: new Date().toDateString()
+  lastResetDate: new Date().toDateString(),
 };
 
 // Extension state
@@ -92,7 +92,7 @@ function setupAdBlocking() {
     chrome.webRequest.onBeforeRequest.addListener(
       listener,
       { urls: adBlockRules },
-      ['blocking']
+      ["blocking"]
     );
 
     // Store the listener reference
@@ -102,12 +102,12 @@ function setupAdBlocking() {
 
 // Handle messages from popup
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  if (message.action === 'toggleAdBlocking') {
+  if (message.action === "toggleAdBlocking") {
     enabled = message.enabled;
     chrome.storage.local.set({ enabled });
     setupAdBlocking();
     sendResponse({ success: true });
-  } else if (message.action === 'getStats') {
+  } else if (message.action === "getStats") {
     sendResponse({ stats });
   }
   return true; // Keep the message channel open for async responses
@@ -115,10 +115,10 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
 // Initialize the extension
 function init() {
-  console.log('AdBlocker Extension initialized');
+  console.log("AdBlocker Extension initialized");
 
   // Load settings from storage
-  chrome.storage.local.get(['enabled', 'stats'], (result) => {
+  chrome.storage.local.get(["enabled", "stats"], (result) => {
     if (result.enabled !== undefined) {
       enabled = result.enabled;
     }
