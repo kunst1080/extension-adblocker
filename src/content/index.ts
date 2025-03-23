@@ -39,6 +39,8 @@ const adSelectors = [
   '[class^="ads-"]',
   '[class$="-ad"]',
   '[class$="-ads"]',
+  // eveil class names
+  '[class*="slideAnimation"]',
 ];
 
 // Function to hide ad elements
