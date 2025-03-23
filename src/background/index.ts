@@ -1,17 +1,3 @@
-// Ad blocking rules patterns
-const adDomainPatterns = [
-  "*://*.doubleclick.net/*",
-  "*://*.googlesyndication.com/*",
-  "*://*.googleadservices.com/*",
-  "*://*.google-analytics.com/*",
-  "*://*.adnxs.com/*",
-  "*://*.advertising.com/*",
-  "*://ads.*.com/*",
-  "*://ad.*.com/*",
-  "*://banner.*.com/*",
-  "*://banners.*.com/*",
-];
-
 // Statistics
 interface Stats {
   todayCount: number;
@@ -31,6 +17,21 @@ let enabled = true;
 let stats = { ...defaultStats };
 let ruleIds: number[] = [];
 let navigationListener: ((details: any) => void) | null = null;
+
+let adDomains: string[] | null = null;
+
+async function loadDomains(): Promise<string[]> {
+  return fetch(chrome.runtime.getURL("domains.txt"))
+    .then((response) => response.text())
+    .then((text) => text.split("\n"))
+    .then((lines) =>
+      lines.filter((line) => line.trim() !== "" && !line.startsWith("#"))
+    )
+    .catch((error) => {
+      console.error("Error loading domains:", error);
+      return [];
+    });
+}
 
 // Function to reset daily stats if needed
 function checkAndResetDailyStats() {
@@ -60,8 +61,13 @@ function updateStats() {
 }
 
 // Convert ad domain patterns to declarativeNetRequest rules
-function createRules(): chrome.declarativeNetRequest.Rule[] {
-  return adDomainPatterns.map((pattern, index) => {
+async function createRules(): Promise<chrome.declarativeNetRequest.Rule[]> {
+  if (!adDomains) {
+    console.error("domains.txt is empty.");
+    return [];
+  }
+  return adDomains.map((domain, index) => {
+    const pattern = `*://${domain}/*`;
     return {
       id: index + 1, // Rule IDs must be positive integers
       priority: 1,
@@ -91,7 +97,7 @@ function createRules(): chrome.declarativeNetRequest.Rule[] {
 // Function to set up ad blocking
 async function setupAdBlocking() {
   if (enabled) {
-    const rules = createRules();
+    const rules = await createRules();
     ruleIds = rules.map((rule) => rule.id);
 
     try {
@@ -154,8 +160,10 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 });
 
 // Initialize the extension
-function init() {
+async function init() {
   console.log("AdBlocker Extension initialized");
+
+  adDomains = await loadDomains();
 
   // Load settings from storage
   chrome.storage.local.get(["enabled", "stats"], (result) => {

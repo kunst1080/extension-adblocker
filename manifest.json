@@ -22,6 +22,12 @@
       "js": ["content/index.js"]
     }
   ],
+  "web_accessible_resources": [
+    {
+      "resources": ["domains.txt"],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "icons": {
     "16": "icon16.svg",
     "48": "icon48.svg",
